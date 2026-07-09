@@ -7,8 +7,6 @@ const asyncExec = promisify(exec);
 const bashRun = async (args: {
   command: string;
 }): Promise<{ stderr: string; stdout: string } | { error: string }> => {
-  console.log("called bash with ", args.command);
-
   try {
     return await asyncExec(args.command);
   } catch (error) {

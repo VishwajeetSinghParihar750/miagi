@@ -7,13 +7,12 @@ import type {
 import { bash } from "./tools/bash";
 
 const openai = new OpenAI({
-  baseURL:
-    process.env.LLM_BASE_URL ?? "http://192.168.0.103:11434/api/generate",
+  // baseURL: process.env.LLM_BASE_URL ?? "http://192.168.0.103:11434/v1",
+  baseURL: process.env.LLM_BASE_URL ?? "http://localhost:8080/v1",
   apiKey: process.env.LLM_API_KEY ?? "dummy",
 });
 
-const DEFAULT_MODEL =
-  process.env.LLM_MODEL ?? "Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M";
+const DEFAULT_MODEL = process.env.LLM_MODEL ?? "qwen2.5-coder:3b";
 
 const MAX_TOKENS = Number(process.env.LLM_MAX_TOKENS ?? 512);
 
@@ -264,8 +263,6 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
       } catch (error) {
         result = { error: String(error) };
       }
-
-      console.log(`[tool result] ${JSON.stringify(result)}`);
 
       messages.push({
         role: "tool",
