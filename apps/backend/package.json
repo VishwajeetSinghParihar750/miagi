@@ -1,0 +1,18 @@
+{
+  "name": "@miagi/backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "openai": "^6.9.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "5.9.2"
+  }
+}
