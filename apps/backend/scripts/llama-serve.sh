@@ -11,6 +11,7 @@ set -euo pipefail
 : "${LLM_PORT:=8080}"
 
 exec llama serve \
+  --jinja \
   -hf "$LLM_HF_REPO" \
   -fitt "$LLM_FIT_TARGET_MB" \
   -fitc "$LLM_FIT_CTX" \
