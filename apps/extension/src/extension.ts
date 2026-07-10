@@ -1,10 +1,9 @@
 import * as vscode from "vscode";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { SYSTEM_INSTRUCTION } from "../../backend/src/agentConfig";
 import { agentLoop } from "../../backend/src/agentLoop";
 import { buildUserMessageWithContext } from "../../backend/src/editorContext";
 import { getEditorContext } from "./getEditorContext";
-import { getResolvedLlmConfig } from "./llmSettings";
+import { getResolvedApplyLlmConfig, getResolvedLlmConfig } from "./llmSettings";
 
 const OUTPUT_CHANNEL_NAME = "Miagi";
 
@@ -26,7 +25,11 @@ async function runAgent(): Promise<void> {
   }
 
   const llm = getResolvedLlmConfig();
+  const applyLlm = getResolvedApplyLlmConfig();
   output.appendLine(`LLM: ${llm.baseURL} (model: ${llm.model})`);
+  output.appendLine(
+    `Apply LLM: ${applyLlm.baseURL} (model: ${applyLlm.model})`,
+  );
 
   const messages: ChatCompletionMessageParam[] = [
     {
@@ -44,13 +47,13 @@ async function runAgent(): Promise<void> {
       },
       async () =>
         agentLoop({
-          systemInstruction: SYSTEM_INSTRUCTION,
+          userRequest: userInput.trim(),
           messages,
-          enableTools: true,
           llm,
+          applyLlm,
           editorContext,
-          onToolCall: (name, args) => {
-            output.appendLine(`[tool] ${name}(${JSON.stringify(args)})`);
+          onCodeEdit: (codeEdit) => {
+            output.appendLine(`[code_edit]\n${codeEdit}`);
           },
           onAssistantReply: (text) => {
             output.appendLine(`Assistant: ${text}`);

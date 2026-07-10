@@ -1,12 +1,11 @@
 import { readFile, writeFile } from "node:fs/promises";
-import type { ChatCompletionTool } from "openai/resources/chat/completions";
+import { mergeCodeEdit } from "../applyModel";
 import type { EditorContext } from "../editorContext";
+import type { ApplyLlmConfig } from "../llmConfig";
 
-type EditToolContext = {
-  editorContext?: EditorContext | null;
-};
-
-type EditResult = { ok: true; done: true; path: string } | { error: string };
+export type EditResult =
+  | { ok: true; done: true; path: string }
+  | { error: string };
 
 function offsetAt(content: string, line: number, column: number): number {
   const lines = content.split("\n");
@@ -40,41 +39,50 @@ async function readAndWrite(
   return { ok: true, done: true, path: filePath };
 }
 
-const applyEditTool: ChatCompletionTool = {
-  type: "function",
-  function: {
-    name: "apply_edit",
-    description:
-      "Apply a code edit. Pass the full updated function or selection text.",
-    parameters: {
-      type: "object",
-      properties: {
-        text: {
-          type: "string",
-          description: "The complete updated code to write",
-        },
-      },
-      required: ["text"],
-      additionalProperties: false,
-    },
-  },
-};
+export function parseCodeEdit(response: string): string | null {
+  const stripped = response.replace(/[\s\S]*?<\/think>/gi, "").trim();
 
-async function applyEdit(
-  args: Record<string, unknown>,
-  ctx: EditToolContext,
+  const tagged = stripped.match(/<code_edit>\s*([\s\S]*?)\s*<\/code_edit>/i);
+  if (tagged?.[1]) return tagged[1].trim();
+
+  const fenced = stripped.match(/```[^\n]*\n([\s\S]*?)\n```/);
+  if (fenced?.[1]) return fenced[1].trim();
+
+  return null;
+}
+
+function getOriginalCode(editorContext: EditorContext): string | null {
+  if (editorContext.selection) {
+    return editorContext.selection.text;
+  }
+
+  if (editorContext.enclosingBlock) {
+    return editorContext.enclosingBlock.text;
+  }
+
+  if (editorContext.surroundingLines.trim()) {
+    return editorContext.surroundingLines;
+  }
+
+  return null;
+}
+
+export async function applyMergedEdit(
+  codeEdit: string,
+  editorContext: EditorContext,
+  applyLlm: ApplyLlmConfig,
 ): Promise<EditResult> {
   try {
-    const text = args.text;
-    if (typeof text !== "string") {
-      return { error: "text must be a string" };
-    }
-
-    const editorContext = ctx.editorContext;
-    if (!editorContext?.filePath) {
+    if (!editorContext.filePath) {
       return { error: "No active editor file" };
     }
 
+    const originalCode = getOriginalCode(editorContext);
+    if (!originalCode) {
+      return { error: "No code context to merge against" };
+    }
+
+    const merged = await mergeCodeEdit(originalCode, codeEdit, applyLlm);
     const filePath = editorContext.filePath;
 
     if (editorContext.selection) {
@@ -86,7 +94,7 @@ async function applyEdit(
           start.character + 1,
         );
         const endOffset = offsetAt(content, end.line + 1, end.character + 1);
-        return content.slice(0, startOffset) + text + content.slice(endOffset);
+        return content.slice(0, startOffset) + merged + content.slice(endOffset);
       });
     }
 
@@ -98,27 +106,16 @@ async function applyEdit(
         const after = lines.slice(endLine + 1).join("\n");
         const prefix = before.length > 0 ? `${before}\n` : "";
         const suffix = after.length > 0 ? `\n${after}` : "";
-        return `${prefix}${text}${suffix}`;
+        return `${prefix}${merged}${suffix}`;
       });
     }
 
     const { line, character } = editorContext.cursor;
     return await readAndWrite(filePath, (content) => {
       const offset = offsetAt(content, line + 1, character + 1);
-      return content.slice(0, offset) + text + content.slice(offset);
+      return content.slice(0, offset) + merged + content.slice(offset);
     });
   } catch (error) {
     return { error: String(error) };
   }
 }
-
-const editToolDefinitions = [applyEditTool];
-
-const editToolHandlers: Record<
-  string,
-  (args: Record<string, unknown>, ctx: EditToolContext) => Promise<EditResult>
-> = {
-  apply_edit: applyEdit,
-};
-
-export { editToolDefinitions, editToolHandlers };

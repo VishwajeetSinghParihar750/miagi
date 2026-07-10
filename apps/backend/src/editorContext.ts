@@ -26,7 +26,7 @@ export function formatEditorContextForPrompt(context: EditorContext): string {
   if (context.selection) {
     return [
       `Open file: ${context.filePath}`,
-      "Selected code (pass full updated version to apply_edit, code only):",
+      "Selected code (respond with a lazy edit in <code_edit> tags, using // ... existing code ... for unchanged parts):",
       "```",
       context.selection.text,
       "```",
@@ -37,7 +37,7 @@ export function formatEditorContextForPrompt(context: EditorContext): string {
     return [
       `Open file: ${context.filePath}`,
       `Cursor on line ${context.cursor.line + 1}`,
-      "Function at cursor (pass full updated version to apply_edit, code only, no line numbers):",
+      "Function at cursor (respond with a lazy edit in <code_edit> tags, using // ... existing code ... for unchanged parts):",
       "```",
       context.enclosingBlock.text,
       "```",
@@ -47,7 +47,7 @@ export function formatEditorContextForPrompt(context: EditorContext): string {
   return [
     `Open file: ${context.filePath}`,
     `Cursor on line ${context.cursor.line + 1}`,
-    "Nearby code:",
+    "Nearby code (respond with a lazy edit in <code_edit> tags, using // ... existing code ... for unchanged parts):",
     "```",
     context.surroundingLines,
     "```",

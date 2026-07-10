@@ -30,6 +30,26 @@
           "type": "number",
           "default": 512,
           "description": "Max tokens per LLM response."
+        },
+        "miagi.applyLlmBaseUrl": {
+          "type": "string",
+          "default": "http://192.168.0.104:11434/v1",
+          "description": "OpenAI-compatible API base URL for the apply/merge model."
+        },
+        "miagi.applyLlmApiKey": {
+          "type": "string",
+          "default": "dummy",
+          "description": "API key sent to the apply model server."
+        },
+        "miagi.applyLlmModel": {
+          "type": "string",
+          "default": "fastedit",
+          "description": "Model that merges lazy code_edit snippets into original code (e.g. FastEdit 1.7B)."
+        },
+        "miagi.applyLlmMaxTokens": {
+          "type": "number",
+          "default": 1024,
+          "description": "Max tokens for apply model responses."
         }
       }
     },

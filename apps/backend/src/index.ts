@@ -1,7 +1,6 @@
 import * as readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { SYSTEM_INSTRUCTION } from "./agentConfig";
 import { agentLoop } from "./agentLoop";
 import {
   buildUserMessageWithContext,
@@ -38,9 +37,8 @@ async function main(): Promise<void> {
 
     try {
       await agentLoop({
-        systemInstruction: SYSTEM_INSTRUCTION,
+        userRequest: userInput,
         messages,
-        enableTools: true,
         editorContext,
       });
     } catch (error) {
