@@ -1,11 +1,10 @@
 import * as vscode from "vscode";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { SYSTEM_INSTRUCTION } from "../../backend/src/agentConfig";
-import { resolveLlmConfig } from "../../backend/src/llmConfig";
 import { agentLoop } from "../../backend/src/agentLoop";
 import { buildUserMessageWithContext } from "../../backend/src/editorContext";
 import { getEditorContext } from "./getEditorContext";
-import { getLlmConfigFromSettings } from "./llmSettings";
+import { getResolvedLlmConfig } from "./llmSettings";
 
 const OUTPUT_CHANNEL_NAME = "Miagi";
 
@@ -26,8 +25,7 @@ async function runAgent(): Promise<void> {
     );
   }
 
-  const llmOverrides = getLlmConfigFromSettings();
-  const llm = resolveLlmConfig(llmOverrides);
+  const llm = getResolvedLlmConfig();
   output.appendLine(`LLM: ${llm.baseURL} (model: ${llm.model})`);
 
   const messages: ChatCompletionMessageParam[] = [
@@ -49,7 +47,7 @@ async function runAgent(): Promise<void> {
           systemInstruction: SYSTEM_INSTRUCTION,
           messages,
           enableTools: true,
-          llm: llmOverrides,
+          llm,
           editorContext,
           onToolCall: (name, args) => {
             output.appendLine(`[tool] ${name}(${JSON.stringify(args)})`);

@@ -18,11 +18,7 @@ export function getEditorContext(): EditorContext | null {
 
   const surroundingLines = Array.from(
     { length: endLine - startLine + 1 },
-    (_, index) => {
-      const lineNumber = startLine + index;
-      const prefix = lineNumber === cursorLine ? ">" : " ";
-      return `${prefix} ${String(lineNumber + 1).padStart(4)} | ${document.lineAt(lineNumber).text}`;
-    },
+    (_, index) => document.lineAt(startLine + index).text,
   ).join("\n");
 
   const enclosingBlock = selection.isEmpty
