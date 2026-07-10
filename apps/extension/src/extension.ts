@@ -50,6 +50,7 @@ async function runAgent(): Promise<void> {
           messages,
           enableTools: true,
           llm: llmOverrides,
+          editorContext,
           onToolCall: (name, args) => {
             output.appendLine(`[tool] ${name}(${JSON.stringify(args)})`);
           },

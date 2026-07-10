@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import type { EditorContext, EditorPosition } from "../../backend/src/editorContext";
+import { findEnclosingBlock } from "./findEnclosingBlock";
 
 function toPosition(position: vscode.Position): EditorPosition {
   return { line: position.line, character: position.character };
@@ -24,11 +25,16 @@ export function getEditorContext(): EditorContext | null {
     },
   ).join("\n");
 
+  const enclosingBlock = selection.isEmpty
+    ? findEnclosingBlock(document, cursorLine)
+    : null;
+
   return {
     filePath: document.uri.fsPath,
     cursor: toPosition(selection.active),
     currentLine: document.lineAt(cursorLine).text,
     surroundingLines,
+    enclosingBlock,
     selection: selection.isEmpty
       ? null
       : {
