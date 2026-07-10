@@ -41,6 +41,7 @@ async function main(): Promise<void> {
         systemInstruction: SYSTEM_INSTRUCTION,
         messages,
         enableTools: true,
+        editorContext,
       });
     } catch (error) {
       console.error("\nAgent error:", error);

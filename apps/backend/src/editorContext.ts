@@ -3,11 +3,18 @@ export type EditorPosition = {
   character: number;
 };
 
+export type EnclosingBlock = {
+  startLine: number;
+  endLine: number;
+  text: string;
+};
+
 export type EditorContext = {
   filePath: string;
   cursor: EditorPosition;
   currentLine: string;
   surroundingLines: string;
+  enclosingBlock: EnclosingBlock | null;
   selection: {
     start: EditorPosition;
     end: EditorPosition;
@@ -16,28 +23,28 @@ export type EditorContext = {
 };
 
 export function formatEditorContextForPrompt(context: EditorContext): string {
-  const lines = [
-    "[Editor context]",
-    `File: ${context.filePath}`,
-    `Cursor: line ${context.cursor.line + 1}, column ${context.cursor.character + 1}`,
-    `Current line: ${context.currentLine || "(empty)"}`,
-    "Nearby code:",
-    "```",
-    context.surroundingLines,
-    "```",
-  ];
-
   if (context.selection) {
-    const { start, end, text } = context.selection;
-    lines.push(
-      `Selection: lines ${start.line + 1}-${end.line + 1}, columns ${start.character + 1}-${end.character + 1}`,
-      "```",
-      text,
-      "```",
-    );
+    return [
+      `Open file: ${context.filePath}`,
+      "Selected code (replace this whole block in apply_edit):",
+      context.selection.text,
+    ].join("\n");
   }
 
-  return lines.join("\n");
+  if (context.enclosingBlock) {
+    return [
+      `Open file: ${context.filePath}`,
+      "Function at cursor (replace this whole block in apply_edit):",
+      context.enclosingBlock.text,
+    ].join("\n");
+  }
+
+  return [
+    `Open file: ${context.filePath}`,
+    `Cursor line: ${context.cursor.line + 1}`,
+    "Nearby code:",
+    context.surroundingLines,
+  ].join("\n");
 }
 
 export function buildUserMessageWithContext(

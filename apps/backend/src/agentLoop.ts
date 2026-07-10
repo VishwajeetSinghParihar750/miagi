@@ -4,27 +4,16 @@ import type {
   ChatCompletionMessageToolCall,
   ChatCompletionTool,
 } from "openai/resources/chat/completions";
+import type { EditorContext } from "./editorContext";
 import {
   createOpenAIClient,
   resolveLlmConfig,
   type LlmConfig,
 } from "./llmConfig";
-import { bash } from "./tools/bash";
+import { editToolDefinitions, editToolHandlers } from "./tools/editFile";
 
-const tools = [bash.toolDefinition];
+const tools = editToolDefinitions;
 const knownToolNames = new Set(tools.map((tool) => tool.function.name));
-
-const availableFunctions: Record<
-  string,
-  (args: Record<string, unknown>) => Promise<unknown> | unknown
-> = {
-  bash: (args) => {
-    if (typeof args.command !== "string") {
-      return { error: "command must be a string" };
-    }
-    return bash.toolCall({ command: args.command });
-  },
-};
 
 export type AgentLoopCallbacks = {
   onAssistantReply?: (text: string) => void;
@@ -37,6 +26,7 @@ export type AgentLoopArgs = {
   model?: string;
   enableTools?: boolean;
   llm?: Partial<LlmConfig>;
+  editorContext?: EditorContext | null;
 } & AgentLoopCallbacks;
 
 function parseToolCallPayload(
@@ -213,6 +203,7 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
     model: modelOverride,
     enableTools = true,
     llm: llmOverrides,
+    editorContext,
     onAssistantReply,
     onToolCall,
   } = args;
@@ -221,8 +212,10 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
   const openai = createOpenAIClient(llm);
   const model = modelOverride ?? llm.model;
   const useStreaming = false;
+  const maxRounds = 2;
+  let round = 0;
 
-  while (true) {
+  while (round++ < maxRounds) {
     const requestMessages: ChatCompletionMessageParam[] = [
       { role: "system", content: systemInstruction },
       ...messages,
@@ -269,42 +262,52 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
       return text;
     }
 
-    for (const toolCall of toolCalls) {
-      if (toolCall.type !== "function") continue;
+    const toolCall = toolCalls.find((call) => call.type === "function");
+    if (!toolCall || toolCall.type !== "function") continue;
 
-      const { name, arguments: rawArgs } = toolCall.function;
-      const fnArgs = rawArgs
-        ? (JSON.parse(rawArgs) as Record<string, unknown>)
-        : {};
+    const { name, arguments: rawArgs } = toolCall.function;
+    const fnArgs = rawArgs
+      ? (JSON.parse(rawArgs) as Record<string, unknown>)
+      : {};
 
-      if (onToolCall) {
-        onToolCall(name, fnArgs);
-      } else {
-        console.log(`\n[tool] ${name}(${JSON.stringify(fnArgs)})`);
-      }
+    if (onToolCall) {
+      onToolCall(name, fnArgs);
+    } else {
+      console.log(`\n[tool] ${name}(${JSON.stringify(fnArgs)})`);
+    }
 
-      const fn = availableFunctions[name];
-      if (!fn) {
-        messages.push({
-          role: "tool",
-          tool_call_id: toolCall.id,
-          content: JSON.stringify({ error: `Unknown tool: ${name}` }),
-        });
-        continue;
-      }
-
-      let result: unknown;
-      try {
-        result = await fn(fnArgs);
-      } catch (error) {
-        result = { error: String(error) };
-      }
-
+    const fn = editToolHandlers[name];
+    if (!fn) {
       messages.push({
         role: "tool",
         tool_call_id: toolCall.id,
-        content: JSON.stringify(result),
+        content: JSON.stringify({ error: `Unknown tool: ${name}` }),
       });
+      continue;
+    }
+
+    let result: unknown;
+    try {
+      result = await fn(fnArgs, { editorContext });
+    } catch (error) {
+      result = { error: String(error) };
+    }
+
+    messages.push({
+      role: "tool",
+      tool_call_id: toolCall.id,
+      content: JSON.stringify(result),
+    });
+
+    if (
+      result &&
+      typeof result === "object" &&
+      "ok" in result &&
+      result.ok === true
+    ) {
+      return "done";
     }
   }
+
+  return "";
 }
