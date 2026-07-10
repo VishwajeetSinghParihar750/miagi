@@ -47,7 +47,6 @@ async function runAgent(): Promise<void> {
       },
       async () =>
         agentLoop({
-          userRequest: userInput.trim(),
           messages,
           llm,
           applyLlm,

@@ -37,7 +37,6 @@ async function main(): Promise<void> {
 
     try {
       await agentLoop({
-        userRequest: userInput,
         messages,
         editorContext,
       });

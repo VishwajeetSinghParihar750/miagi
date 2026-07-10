@@ -15,19 +15,18 @@ export type ApplyLlmConfig = {
 };
 
 // --- Local llama.cpp (this PC) ---
-// export const DEFAULT_LLM_BASE_URL = "http://127.0.0.1:8080/v1";
-// export const DEFAULT_LLM_MODEL = "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M";
+export const DEFAULT_LLM_BASE_URL = "http://127.0.0.1:8080/v1";
+export const DEFAULT_LLM_MODEL = "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M";
 
-export const DEFAULT_LLM_BASE_URL = "http://192.168.0.104:11434/v1";
-export const DEFAULT_LLM_MODEL = "qwen2.5-coder:7b";
+// export const DEFAULT_LLM_BASE_URL = "http://192.168.0.104:11434/v1";
+// export const DEFAULT_LLM_MODEL = "qwen2.5-coder:7b";
 
 export const DEFAULT_LLM_API_KEY = "dummy";
 export const DEFAULT_LLM_MAX_TOKENS = 512;
 
 // FastEdit 1.7B — merges lazy code_edit snippets (llama serve on :8081)
 export const DEFAULT_APPLY_LLM_BASE_URL = "http://127.0.0.1:8081/v1";
-export const DEFAULT_APPLY_LLM_MODEL =
-  "continuous-lab/FastEdit:gguf/fastedit-1.7b-Q8_0.gguf";
+export const DEFAULT_APPLY_LLM_MODEL = "continuous-lab/FastEdit";
 export const DEFAULT_APPLY_LLM_API_KEY = DEFAULT_LLM_API_KEY;
 export const DEFAULT_APPLY_LLM_MAX_TOKENS = 1024;
 

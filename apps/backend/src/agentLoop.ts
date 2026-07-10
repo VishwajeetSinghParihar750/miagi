@@ -1,9 +1,6 @@
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import {
-  CHAT_SYSTEM_INSTRUCTION,
-  EDIT_SYSTEM_INSTRUCTION,
-} from "./agentConfig";
+import { EDIT_SYSTEM_INSTRUCTION } from "./agentConfig";
 import type { EditorContext } from "./editorContext";
 import {
   createOpenAIClient,
@@ -20,19 +17,12 @@ export type AgentLoopCallbacks = {
 };
 
 export type AgentLoopArgs = {
-  userRequest: string;
   messages: ChatCompletionMessageParam[];
   model?: string;
   llm?: Partial<LlmConfig>;
   applyLlm?: Partial<ApplyLlmConfig>;
   editorContext?: EditorContext | null;
 } & AgentLoopCallbacks;
-
-function isLikelyEditRequest(text: string): boolean {
-  return /\b(add|insert|fix|replace|comment|log|delete|change|update|write|remove|rename)\b/i.test(
-    text,
-  );
-}
 
 async function completeAssistantReply(
   openai: OpenAI,
@@ -57,7 +47,6 @@ async function completeAssistantReply(
 
 export async function agentLoop(args: AgentLoopArgs): Promise<string> {
   const {
-    userRequest,
     messages,
     model: modelOverride,
     llm: llmOverrides,
@@ -71,13 +60,10 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
   const applyLlm = resolveApplyLlmConfig(applyLlmOverrides);
   const openai = createOpenAIClient(llm);
   const model = modelOverride ?? llm.model;
-  const isEdit =
-    Boolean(editorContext) && isLikelyEditRequest(userRequest.trim());
-
   const requestMessages: ChatCompletionMessageParam[] = [
     {
       role: "system",
-      content: isEdit ? EDIT_SYSTEM_INSTRUCTION : CHAT_SYSTEM_INSTRUCTION,
+      content: EDIT_SYSTEM_INSTRUCTION,
     },
     ...messages,
   ];
@@ -95,7 +81,7 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
     console.log(`\nAssistant: ${text}\n`);
   }
 
-  if (!isEdit || !editorContext) {
+  if (!editorContext) {
     return text;
   }
 

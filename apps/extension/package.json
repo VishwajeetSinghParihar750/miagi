@@ -43,7 +43,7 @@
         },
         "miagi.applyLlmModel": {
           "type": "string",
-          "default": "continuous-lab/FastEdit:gguf/fastedit-1.7b-Q8_0.gguf",
+          "default": "continuous-lab/FastEdit",
           "description": "Model that merges lazy code_edit snippets into original code (FastEdit 1.7B)."
         },
         "miagi.applyLlmMaxTokens": {
