@@ -29,6 +29,22 @@ export type AgentLoopArgs = {
   editorContext?: EditorContext | null;
 } & AgentLoopCallbacks;
 
+function getLastUserText(messages: ChatCompletionMessageParam[]): string {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (message?.role === "user" && typeof message.content === "string") {
+      return message.content;
+    }
+  }
+  return "";
+}
+
+function isLikelyEditRequest(text: string): boolean {
+  return /\b(add|insert|fix|replace|comment|log|delete|change|update|write|remove|rename)\b/i.test(
+    text,
+  );
+}
+
 function parseToolCallPayload(
   payload: unknown,
 ): { name: string; arguments: Record<string, unknown> } | undefined {
@@ -139,12 +155,13 @@ async function streamAssistantReply(
   maxTokens: number,
   messages: ChatCompletionMessageParam[],
   tools: ChatCompletionTool[] | undefined,
+  toolChoice: "auto" | "required" | undefined,
 ): Promise<{ text: string; message: ChatCompletionMessageParam }> {
   const stream = await openai.chat.completions.create({
     model,
     messages,
     tools,
-    tool_choice: tools ? "auto" : undefined,
+    tool_choice: tools && toolChoice ? toolChoice : tools ? "auto" : undefined,
     max_tokens: maxTokens,
     stream: true,
   });
@@ -178,12 +195,13 @@ async function completeAssistantReply(
   maxTokens: number,
   messages: ChatCompletionMessageParam[],
   tools: ChatCompletionTool[] | undefined,
+  toolChoice: "auto" | "required" | undefined,
 ): Promise<ChatCompletionMessageParam> {
   const response = await openai.chat.completions.create({
     model,
     messages,
     tools,
-    tool_choice: tools ? "auto" : undefined,
+    tool_choice: tools && toolChoice ? toolChoice : tools ? "auto" : undefined,
     temperature: 0,
     max_tokens: maxTokens,
   });
@@ -221,6 +239,10 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
       ...messages,
     ];
     const requestTools = enableTools && tools.length > 0 ? tools : undefined;
+    const toolChoice =
+      requestTools && editorContext && isLikelyEditRequest(getLastUserText(messages))
+        ? "required"
+        : "auto";
 
     const rawAssistantMessage = useStreaming
       ? (await streamAssistantReply(
@@ -229,6 +251,7 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
           llm.maxTokens,
           requestMessages,
           requestTools,
+          toolChoice,
         )).message
       : await completeAssistantReply(
           openai,
@@ -236,6 +259,7 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
           llm.maxTokens,
           requestMessages,
           requestTools,
+          toolChoice,
         );
 
     const assistantMessage = normalizeAssistantMessage(rawAssistantMessage);

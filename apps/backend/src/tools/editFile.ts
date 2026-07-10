@@ -11,7 +11,9 @@ type EditResult = { ok: true; done: true; path: string } | { error: string };
 function offsetAt(content: string, line: number, column: number): number {
   const lines = content.split("\n");
   if (line < 1 || line > lines.length) {
-    throw new Error(`Line ${line} is out of range (file has ${lines.length} lines)`);
+    throw new Error(
+      `Line ${line} is out of range (file has ${lines.length} lines)`,
+    );
   }
 
   let offset = 0;
@@ -22,9 +24,7 @@ function offsetAt(content: string, line: number, column: number): number {
   const lineText = lines[line - 1]!;
   const col = column - 1;
   if (col < 0 || col > lineText.length) {
-    throw new Error(
-      `Column ${column} is out of range for line ${line} (max ${lineText.length + 1})`,
-    );
+    throw new Error(`Column ${column} is out of range for line ${line}`);
   }
 
   return offset + col;
@@ -45,14 +45,13 @@ const applyEditTool: ChatCompletionTool = {
   function: {
     name: "apply_edit",
     description:
-      "Replace the function at cursor or the selected code with the full updated version.",
+      "Apply a code edit. Pass the full updated function or selection text.",
     parameters: {
       type: "object",
       properties: {
         text: {
           type: "string",
-          description:
-            "The complete updated function or selection text, not a snippet to insert",
+          description: "The complete updated code to write",
         },
       },
       required: ["text"],

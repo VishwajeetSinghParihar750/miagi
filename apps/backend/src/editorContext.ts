@@ -26,24 +26,31 @@ export function formatEditorContextForPrompt(context: EditorContext): string {
   if (context.selection) {
     return [
       `Open file: ${context.filePath}`,
-      "Selected code (replace this whole block in apply_edit):",
+      "Selected code (pass full updated version to apply_edit, code only):",
+      "```",
       context.selection.text,
+      "```",
     ].join("\n");
   }
 
   if (context.enclosingBlock) {
     return [
       `Open file: ${context.filePath}`,
-      "Function at cursor (replace this whole block in apply_edit):",
+      `Cursor on line ${context.cursor.line + 1}`,
+      "Function at cursor (pass full updated version to apply_edit, code only, no line numbers):",
+      "```",
       context.enclosingBlock.text,
+      "```",
     ].join("\n");
   }
 
   return [
     `Open file: ${context.filePath}`,
-    `Cursor line: ${context.cursor.line + 1}`,
+    `Cursor on line ${context.cursor.line + 1}`,
     "Nearby code:",
+    "```",
     context.surroundingLines,
+    "```",
   ].join("\n");
 }
 
