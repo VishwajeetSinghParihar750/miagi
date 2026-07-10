@@ -2,7 +2,7 @@
 # Benchmark first-request TPS at different llama.cpp context sizes.
 set -euo pipefail
 
-MODEL="Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M"
+MODEL="Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF:Q4_K_M"
 HOST="127.0.0.1"
 PORT="8080"
 LOG_DIR="/tmp/llama-bench-$$"

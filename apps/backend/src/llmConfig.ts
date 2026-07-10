@@ -16,7 +16,8 @@ export type ApplyLlmConfig = {
 
 // --- Local llama.cpp (this PC) ---
 export const DEFAULT_LLM_BASE_URL = "http://127.0.0.1:8080/v1";
-export const DEFAULT_LLM_MODEL = "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M";
+export const DEFAULT_LLM_MODEL =
+  "Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF:Q4_K_M";
 
 // export const DEFAULT_LLM_BASE_URL = "http://192.168.0.104:11434/v1";
 // export const DEFAULT_LLM_MODEL = "qwen2.5-coder:7b";

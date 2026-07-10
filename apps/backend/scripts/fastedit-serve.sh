@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Serve FastEdit 1.7B for merging lazy code_edit snippets.
 # GGUF lives in a subfolder — use -hff, not repo:path syntax.
-# Keep -c 2048 so both models can share a ~4 GB GPU with Qwen.
+# Keep -c 2048 so both models can share a ~4 GB GPU with Qwen 1.5B.
 set -euo pipefail
 
 : "${APPLY_LLM_HF_REPO:=continuous-lab/FastEdit}"

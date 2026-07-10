@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Serve Qwen 3B — fits on a ~4 GB GPU alongside FastEdit (use -c 2048, not 8192).
+# Serve Qwen2.5-Coder-1.5B — fits on a ~4 GB GPU alongside FastEdit 1.7B.
 set -euo pipefail
 
-: "${LLM_HF_REPO:=Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M}"
+: "${LLM_HF_REPO:=Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF:Q4_K_M}"
 : "${LLM_FIT_TARGET_MB:=256}"
 : "${LLM_FIT_CTX:=2048}"
 : "${LLM_CTX_SIZE:=2048}"

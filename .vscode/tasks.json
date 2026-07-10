@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "serve: llama (Qwen, ctx 2048)",
+      "label": "serve: llama (Qwen 1.5B, ctx 2048)",
       "type": "shell",
       "command": "bun run serve:llama",
       "options": {
