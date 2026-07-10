@@ -1,12 +1,24 @@
 import * as readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { SYSTEM_INSTRUCTION } from "./agentConfig";
 import { agentLoop } from "./agentLoop";
+import {
+  buildUserMessageWithContext,
+  type EditorContext,
+} from "./editorContext";
 
-const SYSTEM_INSTRUCTION =
-  "You are a helpful assistant. Use the bash tool to run shell commands when needed.";
+function parseEditorContextFromEnv(): EditorContext | null {
+  const raw = process.env.EDITOR_CONTEXT;
+  if (!raw) return null;
 
-const messages: ChatCompletionMessageParam[] = [];
+  try {
+    return JSON.parse(raw) as EditorContext;
+  } catch {
+    return null;
+  }
+}
+
 const rl = readline.createInterface({ input, output });
 
 async function main(): Promise<void> {
@@ -17,12 +29,18 @@ async function main(): Promise<void> {
     if (!userInput) continue;
     if (userInput.toLowerCase() === "exit") break;
 
-    messages.push({ role: "user", content: userInput });
+    const editorContext = parseEditorContextFromEnv();
+    const messages: ChatCompletionMessageParam[] = [];
+    messages.push({
+      role: "user",
+      content: buildUserMessageWithContext(userInput, editorContext),
+    });
 
     try {
       await agentLoop({
         systemInstruction: SYSTEM_INSTRUCTION,
         messages,
+        enableTools: true,
       });
     } catch (error) {
       console.error("\nAgent error:", error);

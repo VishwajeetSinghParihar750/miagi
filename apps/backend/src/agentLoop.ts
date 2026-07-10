@@ -4,17 +4,12 @@ import type {
   ChatCompletionMessageToolCall,
   ChatCompletionTool,
 } from "openai/resources/chat/completions";
+import {
+  createOpenAIClient,
+  resolveLlmConfig,
+  type LlmConfig,
+} from "./llmConfig";
 import { bash } from "./tools/bash";
-
-const openai = new OpenAI({
-  // baseURL: process.env.LLM_BASE_URL ?? "http://192.168.0.103:11434/v1",
-  baseURL: process.env.LLM_BASE_URL ?? "http://localhost:8080/v1",
-  apiKey: process.env.LLM_API_KEY ?? "dummy",
-});
-
-const DEFAULT_MODEL = process.env.LLM_MODEL ?? "qwen2.5-coder:3b";
-
-const MAX_TOKENS = Number(process.env.LLM_MAX_TOKENS ?? 512);
 
 const tools = [bash.toolDefinition];
 const knownToolNames = new Set(tools.map((tool) => tool.function.name));
@@ -31,11 +26,18 @@ const availableFunctions: Record<
   },
 };
 
+export type AgentLoopCallbacks = {
+  onAssistantReply?: (text: string) => void;
+  onToolCall?: (name: string, args: Record<string, unknown>) => void;
+};
+
 export type AgentLoopArgs = {
   systemInstruction: string;
   messages: ChatCompletionMessageParam[];
   model?: string;
-};
+  enableTools?: boolean;
+  llm?: Partial<LlmConfig>;
+} & AgentLoopCallbacks;
 
 function parseToolCallPayload(
   payload: unknown,
@@ -142,7 +144,9 @@ function normalizeAssistantMessage(
 }
 
 async function streamAssistantReply(
+  openai: OpenAI,
   model: string,
+  maxTokens: number,
   messages: ChatCompletionMessageParam[],
   tools: ChatCompletionTool[] | undefined,
 ): Promise<{ text: string; message: ChatCompletionMessageParam }> {
@@ -151,7 +155,7 @@ async function streamAssistantReply(
     messages,
     tools,
     tool_choice: tools ? "auto" : undefined,
-    max_tokens: MAX_TOKENS,
+    max_tokens: maxTokens,
     stream: true,
   });
 
@@ -179,7 +183,9 @@ async function streamAssistantReply(
 }
 
 async function completeAssistantReply(
+  openai: OpenAI,
   model: string,
+  maxTokens: number,
   messages: ChatCompletionMessageParam[],
   tools: ChatCompletionTool[] | undefined,
 ): Promise<ChatCompletionMessageParam> {
@@ -189,7 +195,7 @@ async function completeAssistantReply(
     tools,
     tool_choice: tools ? "auto" : undefined,
     temperature: 0,
-    max_tokens: MAX_TOKENS,
+    max_tokens: maxTokens,
   });
 
   const assistantMessage = response.choices[0]?.message;
@@ -201,8 +207,19 @@ async function completeAssistantReply(
 }
 
 export async function agentLoop(args: AgentLoopArgs): Promise<string> {
-  const { systemInstruction, messages, model = DEFAULT_MODEL } = args;
+  const {
+    systemInstruction,
+    messages,
+    model: modelOverride,
+    enableTools = true,
+    llm: llmOverrides,
+    onAssistantReply,
+    onToolCall,
+  } = args;
 
+  const llm = resolveLlmConfig(llmOverrides);
+  const openai = createOpenAIClient(llm);
+  const model = modelOverride ?? llm.model;
   const useStreaming = false;
 
   while (true) {
@@ -210,12 +227,23 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
       { role: "system", content: systemInstruction },
       ...messages,
     ];
-    const requestTools = tools.length > 0 ? tools : undefined;
+    const requestTools = enableTools && tools.length > 0 ? tools : undefined;
 
     const rawAssistantMessage = useStreaming
-      ? (await streamAssistantReply(model, requestMessages, requestTools))
-          .message
-      : await completeAssistantReply(model, requestMessages, requestTools);
+      ? (await streamAssistantReply(
+          openai,
+          model,
+          llm.maxTokens,
+          requestMessages,
+          requestTools,
+        )).message
+      : await completeAssistantReply(
+          openai,
+          model,
+          llm.maxTokens,
+          requestMessages,
+          requestTools,
+        );
 
     const assistantMessage = normalizeAssistantMessage(rawAssistantMessage);
     messages.push(assistantMessage);
@@ -232,7 +260,11 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
           ? assistantMessage.content
           : "";
       if (text && !useStreaming) {
-        console.log(`\nAssistant: ${text}\n`);
+        if (onAssistantReply) {
+          onAssistantReply(text);
+        } else {
+          console.log(`\nAssistant: ${text}\n`);
+        }
       }
       return text;
     }
@@ -245,7 +277,11 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
         ? (JSON.parse(rawArgs) as Record<string, unknown>)
         : {};
 
-      console.log(`\n[tool] ${name}(${JSON.stringify(fnArgs)})`);
+      if (onToolCall) {
+        onToolCall(name, fnArgs);
+      } else {
+        console.log(`\n[tool] ${name}(${JSON.stringify(fnArgs)})`);
+      }
 
       const fn = availableFunctions[name];
       if (!fn) {
