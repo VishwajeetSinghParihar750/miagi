@@ -1,15 +1,15 @@
 export type AppConfig = {
-  apiKey: string;
-  model: string;
   port: number;
+  model: string;
+  chatGptUrl: string;
+  userDataDir: string;
+  headless: boolean;
+  responseTimeoutMs: number;
 };
 
-function requireEnv(name: string): string {
-  const value = process.env[name]?.trim();
-  if (!value) {
-    throw new Error(`Missing required env var: ${name}`);
-  }
-  return value;
+function pickString(value: string | undefined, fallback: string): string {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : fallback;
 }
 
 export function loadConfig(): AppConfig {
@@ -18,9 +18,20 @@ export function loadConfig(): AppConfig {
     throw new Error("PORT must be a positive number");
   }
 
+  const responseTimeoutMs = Number(process.env.PLAYWRIGHT_RESPONSE_TIMEOUT_MS ?? "120000");
+  if (!Number.isFinite(responseTimeoutMs) || responseTimeoutMs <= 0) {
+    throw new Error("PLAYWRIGHT_RESPONSE_TIMEOUT_MS must be a positive number");
+  }
+
   return {
-    apiKey: requireEnv("OPENAI_API_KEY"),
-    model: process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini",
     port,
+    model: pickString(process.env.PLAYWRIGHT_MODEL, "chatgpt-web"),
+    chatGptUrl: pickString(process.env.CHATGPT_URL, "https://chatgpt.com/"),
+    userDataDir: pickString(
+      process.env.PLAYWRIGHT_USER_DATA_DIR,
+      ".playwright-profile",
+    ),
+    headless: process.env.PLAYWRIGHT_HEADLESS === "true",
+    responseTimeoutMs,
   };
 }

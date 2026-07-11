@@ -13,23 +13,23 @@
       "properties": {
         "miagi.llmBaseUrl": {
           "type": "string",
-          "default": "http://127.0.0.1:8080/v1",
-          "description": "OpenAI-compatible LLM API base URL (must end with /v1)."
+          "default": "http://127.0.0.1:3100/v1",
+          "description": "Planner LLM base URL. Defaults to the local Playwright ChatGPT capture server."
         },
         "miagi.llmApiKey": {
           "type": "string",
           "default": "dummy",
-          "description": "API key sent to the LLM server."
+          "description": "Ignored for the planner LLM. Playwright captures ChatGPT web responses directly."
         },
         "miagi.llmModel": {
           "type": "string",
-          "default": "Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF:Q4_K_M",
-          "description": "Model name passed to chat completions."
+          "default": "chatgpt-web",
+          "description": "Label sent to the planner proxy. Playwright returns the captured ChatGPT web response."
         },
         "miagi.llmMaxTokens": {
           "type": "number",
-          "default": 512,
-          "description": "Max tokens per LLM response."
+          "default": 1024,
+          "description": "Max tokens per planner LLM response."
         },
         "miagi.applyLlmBaseUrl": {
           "type": "string",
@@ -69,10 +69,13 @@
     "check-types": "tsc -p tsconfig.json --noEmit && tsc -p src/playwright/tsconfig.json --noEmit",
     "dev": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --sourcemap --watch",
     "playwright:dev": "bun run --watch src/playwright/index.ts",
-    "playwright:api": "bun run src/playwright/index.ts"
+    "playwright:api": "bun run src/playwright/index.ts",
+    "playwright:install": "bunx playwright install chromium",
+    "smoke-test": "bash scripts/smoke-test.sh"
   },
   "dependencies": {
-    "openai": "^6.9.0"
+    "openai": "^6.9.0",
+    "playwright": "^1.55.0"
   },
   "devDependencies": {
     "@types/bun": "^1.2.19",

@@ -1,6 +1,5 @@
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { EDIT_SYSTEM_INSTRUCTION } from "./agentConfig";
 import type { EditorContext } from "./editorContext";
 import {
   createOpenAIClient,
@@ -58,13 +57,7 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
   const applyLlm = resolveApplyLlmConfig(applyLlmOverrides);
   const openai = createOpenAIClient(llm);
   const model = modelOverride ?? llm.model;
-  const requestMessages: ChatCompletionMessageParam[] = [
-    {
-      role: "system",
-      content: EDIT_SYSTEM_INSTRUCTION,
-    },
-    ...messages,
-  ];
+  const requestMessages: ChatCompletionMessageParam[] = messages;
 
   const text = await completeAssistantReply(
     openai,
