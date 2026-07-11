@@ -12,20 +12,14 @@ import {
   resolveLlmConfig,
   type ApplyLlmConfig,
   type LlmConfig,
-} from "../../backend/src/llmConfig";
+} from "./llmConfig";
 
-function pickString(
-  value: string | undefined,
-  fallback: string,
-): string {
+function pickString(value: string | undefined, fallback: string): string {
   const trimmed = value?.trim();
   return trimmed ? trimmed : fallback;
 }
 
-function pickNumber(
-  value: number | undefined,
-  fallback: number,
-): number {
+function pickNumber(value: number | undefined, fallback: number): number {
   return value !== undefined && Number.isFinite(value) && value > 0
     ? value
     : fallback;

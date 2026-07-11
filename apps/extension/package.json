@@ -66,13 +66,16 @@
   },
   "scripts": {
     "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --sourcemap",
-    "check-types": "tsc -p tsconfig.json --noEmit",
-    "dev": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --sourcemap --watch"
+    "check-types": "tsc -p tsconfig.json --noEmit && tsc -p src/playwright/tsconfig.json --noEmit",
+    "dev": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --sourcemap --watch",
+    "playwright:dev": "bun run --watch src/playwright/index.ts",
+    "playwright:api": "bun run src/playwright/index.ts"
   },
   "dependencies": {
     "openai": "^6.9.0"
   },
   "devDependencies": {
+    "@types/bun": "^1.2.19",
     "@types/node": "^22.10.0",
     "@types/vscode": "^1.85.0",
     "esbuild": "^0.25.0",

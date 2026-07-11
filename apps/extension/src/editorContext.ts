@@ -25,8 +25,8 @@ export type EditorContext = {
 export function formatEditorContextForPrompt(context: EditorContext): string {
   if (context.selection) {
     return [
-      `Open file: ${context.filePath}`,
-      "Selected code (respond with a lazy edit in <code_edit> tags, using // ... existing code ... for unchanged parts):",
+      `File: ${context.filePath}`,
+      "Selection:",
       "```",
       context.selection.text,
       "```",
@@ -35,9 +35,9 @@ export function formatEditorContextForPrompt(context: EditorContext): string {
 
   if (context.enclosingBlock) {
     return [
-      `Open file: ${context.filePath}`,
-      `Cursor on line ${context.cursor.line + 1}`,
-      "Function at cursor (respond with a lazy edit in <code_edit> tags, using // ... existing code ... for unchanged parts):",
+      `File: ${context.filePath}`,
+      `Cursor: line ${context.cursor.line + 1}`,
+      "Block at cursor:",
       "```",
       context.enclosingBlock.text,
       "```",
@@ -45,9 +45,9 @@ export function formatEditorContextForPrompt(context: EditorContext): string {
   }
 
   return [
-    `Open file: ${context.filePath}`,
-    `Cursor on line ${context.cursor.line + 1}`,
-    "Nearby code (respond with a lazy edit in <code_edit> tags, using // ... existing code ... for unchanged parts):",
+    `File: ${context.filePath}`,
+    `Cursor: line ${context.cursor.line + 1}`,
+    "Nearby code:",
     "```",
     context.surroundingLines,
     "```",
@@ -59,5 +59,5 @@ export function buildUserMessageWithContext(
   context: EditorContext | null | undefined,
 ): string {
   if (!context) return userInput;
-  return `${formatEditorContextForPrompt(context)}\n\nUser request:\n${userInput}`;
+  return `${formatEditorContextForPrompt(context)}\n\nRequest: ${userInput}`;
 }

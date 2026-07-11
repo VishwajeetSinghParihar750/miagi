@@ -9,11 +9,10 @@ import {
   type ApplyLlmConfig,
   type LlmConfig,
 } from "./llmConfig";
-import { applyMergedEdit, parseCodeEdit } from "./tools/editFile";
+import { applyMergedEdit, parseCodeEdit } from "./editFile";
 
 export type AgentLoopCallbacks = {
-  onAssistantReply?: (text: string) => void;
-  onCodeEdit?: (codeEdit: string) => void;
+  onCodeEdit: (codeEdit: string) => void;
 };
 
 export type AgentLoopArgs = {
@@ -52,7 +51,6 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
     llm: llmOverrides,
     applyLlm: applyLlmOverrides,
     editorContext,
-    onAssistantReply,
     onCodeEdit,
   } = args;
 
@@ -75,12 +73,6 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
     requestMessages,
   );
 
-  if (onAssistantReply) {
-    onAssistantReply(text);
-  } else {
-    console.log(`\nAssistant: ${text}\n`);
-  }
-
   if (!editorContext) {
     return text;
   }
@@ -90,11 +82,7 @@ export async function agentLoop(args: AgentLoopArgs): Promise<string> {
     throw new Error("Planner did not output a <code_edit> block");
   }
 
-  if (onCodeEdit) {
-    onCodeEdit(codeEdit);
-  } else {
-    console.log(`\n[code_edit]\n${codeEdit}\n`);
-  }
+  onCodeEdit(codeEdit);
 
   const result = await applyMergedEdit(codeEdit, editorContext, applyLlm);
   if ("error" in result) {

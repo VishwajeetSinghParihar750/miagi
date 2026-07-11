@@ -5,11 +5,8 @@
     "moduleResolution": "bundler",
     "strict": true,
     "skipLibCheck": true,
-    "noEmit": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
     "types": ["bun"]
   },
-  "include": ["src"]
+  "include": ["."]
 }

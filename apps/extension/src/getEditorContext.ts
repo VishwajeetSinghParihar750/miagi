@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { EditorContext, EditorPosition } from "../../backend/src/editorContext";
+import type { EditorContext, EditorPosition } from "./editorContext";
 import { findEnclosingBlock } from "./findEnclosingBlock";
 
 function toPosition(position: vscode.Position): EditorPosition {

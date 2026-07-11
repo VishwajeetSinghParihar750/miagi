@@ -22,7 +22,9 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "serve:llama": "bun run --cwd apps/backend serve:llama",
-    "serve:fastedit": "bun run --cwd apps/backend serve:fastedit"
+    "serve:fastedit": "bun run --cwd apps/backend serve:fastedit",
+    "playwright:api": "bun run --cwd apps/extension playwright:api",
+    "playwright:dev": "bun run --cwd apps/extension playwright:dev"
   },
   "workspaces": [
     "apps/*",

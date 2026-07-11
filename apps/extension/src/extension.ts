@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { agentLoop } from "../../backend/src/agentLoop";
-import { buildUserMessageWithContext } from "../../backend/src/editorContext";
+import { agentLoop } from "./agentLoop";
+import { buildUserMessageWithContext } from "./editorContext";
 import { getEditorContext } from "./getEditorContext";
 import { getResolvedApplyLlmConfig, getResolvedLlmConfig } from "./llmSettings";
 
@@ -53,9 +53,6 @@ async function runAgent(): Promise<void> {
           editorContext,
           onCodeEdit: (codeEdit) => {
             output.appendLine(`[code_edit]\n${codeEdit}`);
-          },
-          onAssistantReply: (text) => {
-            output.appendLine(`Assistant: ${text}`);
           },
         }),
     );

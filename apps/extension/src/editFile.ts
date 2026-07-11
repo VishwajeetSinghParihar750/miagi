@@ -1,11 +1,10 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { mergeCodeEdit } from "../applyModel";
-import type { EditorContext } from "../editorContext";
-import type { ApplyLlmConfig } from "../llmConfig";
+import { mergeCodeEdit } from "./applyModel";
+import type { EditorContext } from "./editorContext";
+import type { ApplyLlmConfig } from "./llmConfig";
 
 export type EditResult =
-  | { ok: true; done: true; path: string }
-  | { error: string };
+  { ok: true; done: true; path: string } | { error: string };
 
 function offsetAt(content: string, line: number, column: number): number {
   const lines = content.split("\n");
@@ -73,10 +72,6 @@ export async function applyMergedEdit(
   applyLlm: ApplyLlmConfig,
 ): Promise<EditResult> {
   try {
-    if (!editorContext.filePath) {
-      return { error: "No active editor file" };
-    }
-
     const originalCode = getOriginalCode(editorContext);
     if (!originalCode) {
       return { error: "No code context to merge against" };
@@ -94,7 +89,9 @@ export async function applyMergedEdit(
           start.character + 1,
         );
         const endOffset = offsetAt(content, end.line + 1, end.character + 1);
-        return content.slice(0, startOffset) + merged + content.slice(endOffset);
+        return (
+          content.slice(0, startOffset) + merged + content.slice(endOffset)
+        );
       });
     }
 

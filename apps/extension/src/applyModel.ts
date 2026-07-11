@@ -1,22 +1,15 @@
+import { APPLY_SYSTEM_INSTRUCTION } from "./agentConfig";
 import { createOpenAIClient, type ApplyLlmConfig } from "./llmConfig";
-
-const FASTEDIT_SYSTEM =
-  "You are a coding assistant that helps merge code updates, ensuring every modification is fully integrated. /no_think";
 
 function buildFastEditUserMessage(
   originalCode: string,
   updateSnippet: string,
 ): string {
-  return `Merge all changes from the <update> snippet into the <code> below.
-- Preserve the code's structure, order, comments, and indentation exactly.
-- Output only the updated code, enclosed within <updated-code> and </updated-code> tags.
-- Do not include any additional text, explanations, placeholders, ellipses, or code fences.
+  return `Apply the <update> to <code>. Output the full result in <updated-code>...</updated-code> tags only.
 
 <code>${originalCode}</code>
 
-<update>${updateSnippet}</update>
-
-Provide the complete updated code.`;
+<update>${updateSnippet}</update>`;
 }
 
 export function parseUpdatedCode(response: string): string {
@@ -43,7 +36,7 @@ export async function mergeCodeEdit(
   const response = await openai.chat.completions.create({
     model: config.model,
     messages: [
-      { role: "system", content: FASTEDIT_SYSTEM },
+      { role: "system", content: APPLY_SYSTEM_INSTRUCTION },
       {
         role: "user",
         content: buildFastEditUserMessage(originalCode, updateSnippet),

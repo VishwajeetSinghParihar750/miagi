@@ -10,17 +10,6 @@
         "typescript": "5.9.2",
       },
     },
-    "apps/backend": {
-      "name": "@miagi/backend",
-      "version": "0.0.0",
-      "dependencies": {
-        "openai": "^6.9.0",
-      },
-      "devDependencies": {
-        "@types/bun": "latest",
-        "typescript": "5.9.2",
-      },
-    },
     "apps/extension": {
       "name": "@miagi/extension",
       "version": "0.0.0",
@@ -28,6 +17,7 @@
         "openai": "^6.9.0",
       },
       "devDependencies": {
+        "@types/bun": "^1.2.19",
         "@types/node": "^22.10.0",
         "@types/vscode": "^1.85.0",
         "esbuild": "^0.25.0",
@@ -87,8 +77,6 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.25.12", "", { "os": "win32", "cpu": "ia32" }, "sha512-HkqnmmBoCbCwxUKKNPBixiWDGCpQGVsrQfJoVGYLPT41XWF8lHuE5N6WhVia2n4o5QK5M4tYr21827fNhi4byQ=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
-
-    "@miagi/backend": ["@miagi/backend@workspace:apps/backend"],
 
     "@miagi/extension": ["@miagi/extension@workspace:apps/extension"],
 
