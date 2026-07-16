@@ -3,12 +3,10 @@
     "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "outDir": "dist",
+    "lib": ["ES2022"],
     "strict": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
-    "sourceMap": true
+    "esModuleInterop": true
   },
-  "include": ["src"],
-  "exclude": ["src/playwright"]
+  "include": ["src"]
 }

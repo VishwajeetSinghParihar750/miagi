@@ -1,84 +1,26 @@
 {
-  "name": "@miagi/extension",
+  "name": "miagi",
+  "displayName": "Miagi",
   "version": "0.0.0",
   "private": true,
   "engines": {
     "vscode": "^1.85.0"
   },
   "main": "./dist/extension.js",
-  "activationEvents": ["onCommand:miagi.runAgent", "onCommand:miagi.logEditorContext"],
+  "activationEvents": ["onCommand:miagi.fastEdit"],
   "contributes": {
-    "configuration": {
-      "title": "Miagi",
-      "properties": {
-        "miagi.llmBaseUrl": {
-          "type": "string",
-          "default": "http://127.0.0.1:3100/v1",
-          "description": "Planner LLM base URL. Defaults to the local Playwright ChatGPT capture server."
-        },
-        "miagi.llmApiKey": {
-          "type": "string",
-          "default": "dummy",
-          "description": "Ignored for the planner LLM. Playwright captures ChatGPT web responses directly."
-        },
-        "miagi.llmModel": {
-          "type": "string",
-          "default": "chatgpt-web",
-          "description": "Label sent to the planner proxy. Playwright returns the captured ChatGPT web response."
-        },
-        "miagi.llmMaxTokens": {
-          "type": "number",
-          "default": 1024,
-          "description": "Max tokens per planner LLM response."
-        },
-        "miagi.applyLlmBaseUrl": {
-          "type": "string",
-          "default": "http://127.0.0.1:8081/v1",
-          "description": "OpenAI-compatible API base URL for the apply/merge model."
-        },
-        "miagi.applyLlmApiKey": {
-          "type": "string",
-          "default": "dummy",
-          "description": "API key sent to the apply model server."
-        },
-        "miagi.applyLlmModel": {
-          "type": "string",
-          "default": "continuous-lab/FastEdit",
-          "description": "Model that merges lazy code_edit snippets into original code (FastEdit 1.7B)."
-        },
-        "miagi.applyLlmMaxTokens": {
-          "type": "number",
-          "default": 1024,
-          "description": "Max tokens for apply model responses."
-        }
-      }
-    },
     "commands": [
       {
-        "command": "miagi.runAgent",
-        "title": "Miagi: Run Agent"
-      },
-      {
-        "command": "miagi.logEditorContext",
-        "title": "Miagi: Log Editor Context"
+        "command": "miagi.fastEdit",
+        "title": "Miagi: FastEdit"
       }
     ]
   },
   "scripts": {
-    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --sourcemap",
-    "check-types": "tsc -p tsconfig.json --noEmit && tsc -p src/playwright/tsconfig.json --noEmit",
-    "dev": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --sourcemap --watch",
-    "playwright:dev": "bun run --watch src/playwright/index.ts",
-    "playwright:api": "bun run src/playwright/index.ts",
-    "playwright:install": "bunx playwright install chromium",
-    "smoke-test": "bash scripts/smoke-test.sh"
-  },
-  "dependencies": {
-    "openai": "^6.9.0",
-    "playwright": "^1.55.0"
+    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs",
+    "watch": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --watch"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.19",
     "@types/node": "^22.10.0",
     "@types/vscode": "^1.85.0",
     "esbuild": "^0.25.0",

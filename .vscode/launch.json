@@ -2,18 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Extension",
+      "name": "Run Miagi",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}/apps/extension"],
-      "outFiles": ["${workspaceFolder}/apps/extension/dist/**/*.js"],
-      "preLaunchTask": "extension: build",
-      "env": {
-        "LLM_BASE_URL": "http://127.0.0.1:3100/v1",
-        "LLM_MODEL": "chatgpt-web",
-        "APPLY_LLM_BASE_URL": "http://127.0.0.1:8081/v1",
-        "APPLY_LLM_MODEL": "continuous-lab/FastEdit"
-      }
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/apps/extension"
+      ],
+      "outFiles": ["${workspaceFolder}/apps/extension/dist/**/*.js"]
     }
   ]
 }
